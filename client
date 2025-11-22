@@ -1,0 +1,15 @@
+import socket
+
+HOST = '127.0.0.1'   # alamat server (localhost)
+PORT = 5050          # port server
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect((HOST, PORT))
+
+pesan = "Tes Koneksi"
+client_socket.sendall(pesan.encode())
+
+balasan = client_socket.recv(1024).decode()
+print("Balasan dari server:", balasan)
+
+client_socket.close()
