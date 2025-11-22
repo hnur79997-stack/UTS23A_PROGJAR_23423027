@@ -1,0 +1,51 @@
+import socket
+import threading
+
+HOST = '0.0.0.0'
+PORT = 5050
+
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((HOST, PORT))
+server.listen()
+
+print(f"Chat Server berjalan di port {PORT} ...")
+
+clients = []     # menyimpan semua koneksi client
+names = []       # menyimpan nama client (opsional)
+
+# --- Fungsi broadcast ke semua client ---
+def broadcast(pesan, sender_conn):
+    for client in clients:
+        if client != sender_conn:   # kirim ke client lain
+            try:
+                client.send(pesan)
+            except:
+                client.close()
+                clients.remove(client)
+
+# --- Tangani setiap client ---
+def handle_client(conn):
+    while True:
+        try:
+            pesan = conn.recv(1024)
+            broadcast(pesan, conn)
+        except:
+            # Jika client disconnect
+            index = clients.index(conn)
+            clients.remove(conn)
+            conn.close()
+            break
+
+# --- Menerima client baru ---
+def terima_client():
+    while True:
+        conn, addr = server.accept()
+        print(f"Client baru terhubung: {addr}")
+
+        clients.append(conn)
+
+        thread = threading.Thread(target=handle_client, args=(conn,))
+        thread.start()
+
+# Start server
+terima_client()
